@@ -258,3 +258,41 @@ class NotificationListView(generics.ListAPIView):
 
     def get_queryset(self):
         return Notification.objects.filter(user=self.request.user)
+
+
+# --- Bootstrap (one-time setup for Render) ---
+
+import os
+from django.core.management import call_command
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
+
+@csrf_exempt
+def bootstrap_view(request):
+    expected_key = os.environ.get('BOOTSTRAP_KEY', '')
+    provided_key = request.GET.get('key', '')
+
+    if not expected_key or provided_key != expected_key:
+        return JsonResponse({'error': 'Invalid or missing bootstrap key'}, status=403)
+
+    results = []
+
+    admin_username = os.environ.get('ADMIN_USERNAME', '')
+    admin_email = os.environ.get('ADMIN_EMAIL', 'admin@example.com')
+    admin_password = os.environ.get('ADMIN_PASSWORD', '')
+
+    if admin_username and admin_password:
+        if not User.objects.filter(username=admin_username).exists():
+            User.objects.create_superuser(admin_username, admin_email, admin_password)
+            results.append(f'Superuser "{admin_username}" created')
+        else:
+            results.append(f'Superuser "{admin_username}" already exists')
+
+    try:
+        call_command('loaddata', 'products.json')
+        results.append('Products fixture loaded')
+    except Exception as e:
+        results.append(f'Fixture error: {e}')
+
+    return JsonResponse({'status': 'done', 'results': results})

@@ -1,0 +1,346 @@
+[
+{
+  "model": "products.brand",
+  "pk": 1,
+  "fields": {
+    "name": "Dell",
+    "slug": "dell",
+    "logo": "",
+    "created_at": "2026-06-17T11:16:56.304Z"
+  }
+},
+{
+  "model": "products.brand",
+  "pk": 2,
+  "fields": {
+    "name": "Microsoft",
+    "slug": "microsoft",
+    "logo": "",
+    "created_at": "2026-06-17T11:16:56.310Z"
+  }
+},
+{
+  "model": "products.brand",
+  "pk": 3,
+  "fields": {
+    "name": "Lenovo",
+    "slug": "lenovo",
+    "logo": "",
+    "created_at": "2026-06-17T11:16:56.315Z"
+  }
+},
+{
+  "model": "products.brand",
+  "pk": 4,
+  "fields": {
+    "name": "Acer",
+    "slug": "acer",
+    "logo": "",
+    "created_at": "2026-06-17T11:16:56.320Z"
+  }
+},
+{
+  "model": "products.brand",
+  "pk": 5,
+  "fields": {
+    "name": "Apple",
+    "slug": "apple",
+    "logo": "",
+    "created_at": "2026-06-17T11:16:56.326Z"
+  }
+},
+{
+  "model": "products.brand",
+  "pk": 6,
+  "fields": {
+    "name": "Samsung",
+    "slug": "samsung",
+    "logo": "",
+    "created_at": "2026-06-17T11:16:56.333Z"
+  }
+},
+{
+  "model": "products.brand",
+  "pk": 7,
+  "fields": {
+    "name": "Razer",
+    "slug": "razer",
+    "logo": "",
+    "created_at": "2026-06-17T11:16:56.339Z"
+  }
+},
+{
+  "model": "products.brand",
+  "pk": 8,
+  "fields": {
+    "name": "ASUS",
+    "slug": "asus",
+    "logo": "",
+    "created_at": "2026-06-17T11:16:56.345Z"
+  }
+},
+{
+  "model": "products.brand",
+  "pk": 9,
+  "fields": {
+    "name": "HP",
+    "slug": "hp",
+    "logo": "",
+    "created_at": "2026-06-17T11:16:56.351Z"
+  }
+},
+{
+  "model": "products.brand",
+  "pk": 10,
+  "fields": {
+    "name": "Framework",
+    "slug": "framework",
+    "logo": "",
+    "created_at": "2026-06-17T11:16:56.357Z"
+  }
+},
+{
+  "model": "products.category",
+  "pk": 1,
+  "fields": {
+    "name": "Laptops",
+    "slug": "laptops",
+    "description": "High-performance laptops for work, gaming, and everyday use.",
+    "image": ""
+  }
+},
+{
+  "model": "products.product",
+  "pk": 18,
+  "fields": {
+    "category": 1,
+    "brand": 5,
+    "name": "MacBook Pro 16\" M3 Max",
+    "slug": "macbook-pro-16-m3-max",
+    "description": "Apple M3 Max chip with 16-core CPU and 40-core GPU. 36GB unified memory, 1TB SSD. Stunning 16.2-inch Liquid Retina XDR display. Up to 22 hours of battery life.",
+    "price": "3499.00",
+    "discount_price": "3199.00",
+    "stock": 15,
+    "image": "products/macbook-pro-16-m3-max_viX65hz.png",
+    "is_active": true,
+    "created_at": "2026-06-17T11:16:56.364Z",
+    "updated_at": "2026-06-17T11:16:56.433Z"
+  }
+},
+{
+  "model": "products.product",
+  "pk": 19,
+  "fields": {
+    "category": 1,
+    "brand": 5,
+    "name": "MacBook Air 15\" M3",
+    "slug": "macbook-air-15-m3",
+    "description": "Apple M3 chip with 8-core CPU and 10-core GPU. 16GB unified memory, 512GB SSD. 15.3-inch Liquid Retina display. Incredibly thin and light design.",
+    "price": "1299.00",
+    "discount_price": null,
+    "stock": 25,
+    "image": "products/macbook-air-15-m3_QCsrCVK.png",
+    "is_active": true,
+    "created_at": "2026-06-17T11:16:56.441Z",
+    "updated_at": "2026-06-17T11:16:56.469Z"
+  }
+},
+{
+  "model": "products.product",
+  "pk": 20,
+  "fields": {
+    "category": 1,
+    "brand": 1,
+    "name": "Dell XPS 15",
+    "slug": "dell-xps-15",
+    "description": "Intel Core i9-13900H, 32GB DDR5 RAM, 1TB NVMe SSD. NVIDIA GeForce RTX 4060. 15.6-inch 3.5K OLED InfinityEdge display. Premium aluminum chassis.",
+    "price": "2499.00",
+    "discount_price": "2199.00",
+    "stock": 10,
+    "image": "products/dell-xps-15_uClwxX6.png",
+    "is_active": true,
+    "created_at": "2026-06-17T11:16:56.476Z",
+    "updated_at": "2026-06-17T11:16:56.504Z"
+  }
+},
+{
+  "model": "products.product",
+  "pk": 21,
+  "fields": {
+    "category": 1,
+    "brand": 3,
+    "name": "ThinkPad X1 Carbon Gen 11",
+    "slug": "thinkpad-x1-carbon-gen-11",
+    "description": "Intel Core i7-1365U vPro, 16GB LPDDR5 RAM, 512GB SSD. 14-inch 2.8K OLED display. Ultralight at just 2.48 lbs. MIL-STD-810H durability.",
+    "price": "1899.00",
+    "discount_price": null,
+    "stock": 20,
+    "image": "products/thinkpad-x1-carbon-gen-11_pay062m.png",
+    "is_active": true,
+    "created_at": "2026-06-17T11:16:56.510Z",
+    "updated_at": "2026-06-17T11:16:56.535Z"
+  }
+},
+{
+  "model": "products.product",
+  "pk": 22,
+  "fields": {
+    "category": 1,
+    "brand": 8,
+    "name": "ASUS ROG Zephyrus G14",
+    "slug": "asus-rog-zephyrus-g14",
+    "description": "AMD Ryzen 9 7940HS, 16GB DDR5 RAM, 1TB SSD. NVIDIA GeForce RTX 4070. 14-inch QHD 165Hz display. Compact gaming powerhouse.",
+    "price": "1999.00",
+    "discount_price": "1799.00",
+    "stock": 12,
+    "image": "products/asus-rog-zephyrus-g14_dAh957E.png",
+    "is_active": true,
+    "created_at": "2026-06-17T11:16:56.542Z",
+    "updated_at": "2026-06-17T11:16:56.573Z"
+  }
+},
+{
+  "model": "products.product",
+  "pk": 23,
+  "fields": {
+    "category": 1,
+    "brand": 9,
+    "name": "HP Spectre x360 14",
+    "slug": "hp-spectre-x360-14",
+    "description": "Intel Core i7-1355U, 16GB LPDDR4x RAM, 1TB SSD. 14-inch 2.8K OLED touch display. 360-degree hinge. Thunderbolt 4 ports. Pen support included.",
+    "price": "1599.00",
+    "discount_price": null,
+    "stock": 17,
+    "image": "products/hp-spectre-x360-14_hNmDGai.png",
+    "is_active": true,
+    "created_at": "2026-06-17T11:16:56.580Z",
+    "updated_at": "2026-06-17T11:16:56.607Z"
+  }
+},
+{
+  "model": "products.product",
+  "pk": 24,
+  "fields": {
+    "category": 1,
+    "brand": 2,
+    "name": "Microsoft Surface Laptop 5",
+    "slug": "microsoft-surface-laptop-5",
+    "description": "Intel Core i7-1265U, 16GB LPDDR5x RAM, 512GB SSD. 13.5-inch PixelSense touchscreen. Alcantara palm rest. Elegant and portable design.",
+    "price": "1499.00",
+    "discount_price": "1299.00",
+    "stock": 22,
+    "image": "products/microsoft-surface-laptop-5_v61vwuT.png",
+    "is_active": true,
+    "created_at": "2026-06-17T11:16:56.612Z",
+    "updated_at": "2026-06-17T11:16:56.637Z"
+  }
+},
+{
+  "model": "products.product",
+  "pk": 25,
+  "fields": {
+    "category": 1,
+    "brand": 7,
+    "name": "Razer Blade 15",
+    "slug": "razer-blade-15",
+    "description": "Intel Core i7-13800H, 16GB DDR5 RAM, 1TB SSD. NVIDIA GeForce RTX 4070. 15.6-inch QHD 240Hz display. CNC aluminum unibody. Per-key RGB.",
+    "price": "2699.00",
+    "discount_price": null,
+    "stock": 4,
+    "image": "products/razer-blade-15_EUZxb4n.png",
+    "is_active": true,
+    "created_at": "2026-06-17T11:16:56.642Z",
+    "updated_at": "2026-06-17T11:16:56.671Z"
+  }
+},
+{
+  "model": "products.product",
+  "pk": 26,
+  "fields": {
+    "category": 1,
+    "brand": 3,
+    "name": "Lenovo IdeaPad Slim 7",
+    "slug": "lenovo-ideapad-slim-7",
+    "description": "AMD Ryzen 7 7730U, 16GB DDR4 RAM, 512GB SSD. 16-inch WQXGA IPS display. Fingerprint reader. Backlit keyboard. 1080p webcam with shutter.",
+    "price": "899.00",
+    "discount_price": "749.00",
+    "stock": 29,
+    "image": "products/lenovo-ideapad-slim-7_QV0Zi8r.png",
+    "is_active": true,
+    "created_at": "2026-06-17T11:16:56.678Z",
+    "updated_at": "2026-06-17T11:16:56.705Z"
+  }
+},
+{
+  "model": "products.product",
+  "pk": 27,
+  "fields": {
+    "category": 1,
+    "brand": 4,
+    "name": "Acer Swift 5",
+    "slug": "acer-swift-5",
+    "description": "Intel Core i7-1360P, 16GB LPDDR5 RAM, 512GB SSD. 14-inch 2.5K IPS touchscreen. Magnesium-lithium chassis weighs only 2.65 lbs. 10-hour battery.",
+    "price": "1099.00",
+    "discount_price": null,
+    "stock": 14,
+    "image": "products/acer-swift-5_FBJa4rT.png",
+    "is_active": true,
+    "created_at": "2026-06-17T11:16:56.711Z",
+    "updated_at": "2026-06-17T11:16:56.737Z"
+  }
+},
+{
+  "model": "products.product",
+  "pk": 28,
+  "fields": {
+    "category": 1,
+    "brand": 6,
+    "name": "Samsung Galaxy Book 3 Pro 360",
+    "slug": "samsung-galaxy-book-3-pro-360",
+    "description": "Intel Core i7-1360P, 16GB LPDDR5 RAM, 1TB SSD. 16-inch AMOLED touchscreen. S Pen included. 360-degree hinge. Quad speakers AKG tuned.",
+    "price": "1899.00",
+    "discount_price": "1649.00",
+    "stock": 10,
+    "image": "products/samsung-galaxy-book-3-pro-360_34O4AHU.png",
+    "is_active": true,
+    "created_at": "2026-06-17T11:16:56.743Z",
+    "updated_at": "2026-06-17T11:16:56.780Z"
+  }
+},
+{
+  "model": "products.product",
+  "pk": 29,
+  "fields": {
+    "category": 1,
+    "brand": 10,
+    "name": "Framework Laptop 16",
+    "slug": "framework-laptop-16",
+    "description": "AMD Ryzen 7 7840HS, 32GB DDR5 RAM, 1TB NVMe SSD. Modular design with user-upgradeable GPU, expansion cards. 16-inch QHD+ 165Hz display.",
+    "price": "2099.00",
+    "discount_price": null,
+    "stock": 0,
+    "image": "products/framework-laptop-16_eZEcnFh.png",
+    "is_active": true,
+    "created_at": "2026-06-17T11:16:56.789Z",
+    "updated_at": "2026-06-17T11:16:56.821Z"
+  }
+},
+{
+  "model": "products.recentlyviewed",
+  "pk": 1,
+  "fields": {
+    "user": 4,
+    "product": 22,
+    "viewed_at": "2026-06-18T07:42:00.879Z"
+  }
+},
+{
+  "model": "products.recentlyviewed",
+  "pk": 2,
+  "fields": {
+    "user": 4,
+    "product": 23,
+    "viewed_at": "2026-06-18T09:14:33.227Z"
+  }
+}
+]
