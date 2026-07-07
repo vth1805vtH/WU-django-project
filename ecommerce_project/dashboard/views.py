@@ -9,10 +9,12 @@ from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views.generic import DetailView, ListView, TemplateView, View
-from django.views.generic.edit import FormView
+from django.views.generic.edit import CreateView, DeleteView, UpdateView
 
 from orders.models import Order
+from products.models import Brand, Category, Product
 
+from .forms import BrandForm, CategoryForm, ProductForm
 from .models import Notification
 from .services.analytics_service import get_full_analytics
 
@@ -212,3 +214,150 @@ class MarkNotificationReadView(LoginRequiredMixin, View):
 
 class GenerateDescriptionView(StaffRequiredMixin, TemplateView):
     template_name = 'dashboard/generate_description.html'
+
+
+# ─── Product Management ───────────────────────────────────────────────
+
+class ProductListView(StaffRequiredMixin, ListView):
+    model = Product
+    template_name = 'dashboard/product_list.html'
+    context_object_name = 'products'
+    paginate_by = 20
+
+    def get_queryset(self):
+        qs = Product.objects.select_related('category', 'brand').all()
+        q = self.request.GET.get('q')
+        if q:
+            qs = qs.filter(name__icontains=q)
+        return qs
+
+
+class ProductCreateView(StaffRequiredMixin, CreateView):
+    model = Product
+    form_class = ProductForm
+    template_name = 'dashboard/product_form.html'
+    success_url = reverse_lazy('dashboard:product_list')
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Product created successfully.')
+        return super().form_valid(form)
+
+
+class ProductUpdateView(StaffRequiredMixin, UpdateView):
+    model = Product
+    form_class = ProductForm
+    template_name = 'dashboard/product_form.html'
+    success_url = reverse_lazy('dashboard:product_list')
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Product updated successfully.')
+        return super().form_valid(form)
+
+
+class ProductDeleteView(StaffRequiredMixin, DeleteView):
+    model = Product
+    template_name = 'dashboard/product_confirm_delete.html'
+    success_url = reverse_lazy('dashboard:product_list')
+    context_object_name = 'product'
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(self.request, 'Product deleted successfully.')
+        return super().delete(request, *args, **kwargs)
+
+
+# ─── Brand Management ─────────────────────────────────────────────────
+
+class BrandListView(StaffRequiredMixin, ListView):
+    model = Brand
+    template_name = 'dashboard/brand_list.html'
+    context_object_name = 'brands'
+    paginate_by = 20
+
+    def get_queryset(self):
+        qs = Brand.objects.annotate(product_count=Count('products')).all()
+        q = self.request.GET.get('q')
+        if q:
+            qs = qs.filter(name__icontains=q)
+        return qs
+
+
+class BrandCreateView(StaffRequiredMixin, CreateView):
+    model = Brand
+    form_class = BrandForm
+    template_name = 'dashboard/brand_form.html'
+    success_url = reverse_lazy('dashboard:brand_list')
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Brand created successfully.')
+        return super().form_valid(form)
+
+
+class BrandUpdateView(StaffRequiredMixin, UpdateView):
+    model = Brand
+    form_class = BrandForm
+    template_name = 'dashboard/brand_form.html'
+    success_url = reverse_lazy('dashboard:brand_list')
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Brand updated successfully.')
+        return super().form_valid(form)
+
+
+class BrandDeleteView(StaffRequiredMixin, DeleteView):
+    model = Brand
+    template_name = 'dashboard/brand_confirm_delete.html'
+    success_url = reverse_lazy('dashboard:brand_list')
+    context_object_name = 'brand'
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(self.request, 'Brand deleted successfully.')
+        return super().delete(request, *args, **kwargs)
+
+
+# ─── Category Management ──────────────────────────────────────────────
+
+class CategoryListView(StaffRequiredMixin, ListView):
+    model = Category
+    template_name = 'dashboard/category_list.html'
+    context_object_name = 'categories'
+    paginate_by = 20
+
+    def get_queryset(self):
+        qs = Category.objects.annotate(product_count=Count('products')).all()
+        q = self.request.GET.get('q')
+        if q:
+            qs = qs.filter(name__icontains=q)
+        return qs
+
+
+class CategoryCreateView(StaffRequiredMixin, CreateView):
+    model = Category
+    form_class = CategoryForm
+    template_name = 'dashboard/category_form.html'
+    success_url = reverse_lazy('dashboard:category_list')
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Category created successfully.')
+        return super().form_valid(form)
+
+
+class CategoryUpdateView(StaffRequiredMixin, UpdateView):
+    model = Category
+    form_class = CategoryForm
+    template_name = 'dashboard/category_form.html'
+    success_url = reverse_lazy('dashboard:category_list')
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Category updated successfully.')
+        return super().form_valid(form)
+
+
+class CategoryDeleteView(StaffRequiredMixin, DeleteView):
+    model = Category
+    template_name = 'dashboard/category_confirm_delete.html'
+    success_url = reverse_lazy('dashboard:category_list')
+    context_object_name = 'category'
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(self.request, 'Category deleted successfully.')
+        return super().delete(request, *args, **kwargs)

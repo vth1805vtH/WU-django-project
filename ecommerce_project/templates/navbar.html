@@ -61,7 +61,14 @@
             <ul class="dropdown-menu dropdown-menu-end shadow-sm">
               <li><a class="dropdown-item" href="{% url 'accounts:profile' %}"><i class="bi bi-person me-2"></i>Profile</a></li>
               <li><a class="dropdown-item" href="{% url 'accounts:address_list' %}"><i class="bi bi-geo-alt me-2"></i>Addresses</a></li>
-              {% if user.is_staff %}<li><a class="dropdown-item" href="{% url 'dashboard:dashboard_home' %}"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a></li>{% endif %}
+              {% if user.is_staff %}
+                <li><a class="dropdown-item" href="{% url 'dashboard:dashboard_home' %}"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><h6 class="dropdown-header">Management</h6></li>
+                <li><a class="dropdown-item" href="{% url 'dashboard:product_list' %}"><i class="bi bi-box me-2"></i>Products</a></li>
+                <li><a class="dropdown-item" href="{% url 'dashboard:brand_list' %}"><i class="bi bi-tag me-2"></i>Brands</a></li>
+                <li><a class="dropdown-item" href="{% url 'dashboard:category_list' %}"><i class="bi bi-collection me-2"></i>Categories</a></li>
+              {% endif %}
               <li><hr class="dropdown-divider"></li>
               <li>
                 <form method="post" action="{% url 'accounts:logout' %}" class="d-inline">
