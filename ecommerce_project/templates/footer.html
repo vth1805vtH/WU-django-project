@@ -1,0 +1,51 @@
+<footer class="mt-5 py-5">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-lg-4">
+        <h6 class="text-white mb-3"><i class="bi bi-shop"></i> ShopEase</h6>
+        <p class="small text-white-50 mb-0">
+          Your one-stop online store for quality products at great prices.
+        </p>
+      </div>
+      <div class="col-6 col-md-3 col-lg-2">
+        <h6 class="text-white mb-3">Shop</h6>
+        <ul class="list-unstyled small">
+          <li class="mb-2"><a href="{% url 'home' %}">Home</a></li>
+          <li class="mb-2"><a href="{% url 'products:product_list' %}">All Products</a></li>
+        </ul>
+      </div>
+      <div class="col-6 col-md-3 col-lg-2">
+        <h6 class="text-white mb-3">Account</h6>
+        <ul class="list-unstyled small">
+          {% if user.is_authenticated %}
+            <li class="mb-2"><a href="{% url 'accounts:profile' %}">Profile</a></li>
+            <li class="mb-2"><a href="{% url 'accounts:logout' %}">Logout</a></li>
+          {% else %}
+            <li class="mb-2"><a href="{% url 'accounts:login' %}">Login</a></li>
+            <li class="mb-2"><a href="{% url 'accounts:register' %}">Register</a></li>
+          {% endif %}
+        </ul>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <h6 class="text-white mb-3">Support</h6>
+        <ul class="list-unstyled small">
+          <li class="mb-2"><a href="#">Contact Us</a></li>
+          <li class="mb-2"><a href="#">FAQ</a></li>
+          <li class="mb-2"><a href="#">Shipping &amp; Returns</a></li>
+        </ul>
+      </div>
+    </div>
+    <hr class="border-white-10 my-4">
+    <div class="row align-items-center">
+      <div class="col-md-6 text-center text-md-start">
+        <p class="small text-white-50 mb-0">&copy; {% now 'Y' %} ShopEase. All rights reserved.</p>
+      </div>
+      <div class="col-md-6 text-center text-md-end mt-2 mt-md-0">
+        <a href="#" class="text-white-50 me-3"><i class="bi bi-facebook"></i></a>
+        <a href="#" class="text-white-50 me-3"><i class="bi bi-twitter-x"></i></a>
+        <a href="#" class="text-white-50 me-3"><i class="bi bi-instagram"></i></a>
+        <a href="#" class="text-white-50 me-3"><i class="bi bi-tiktok"></i></a>
+      </div>
+    </div>
+  </div>
+</footer>

@@ -1,0 +1,266 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Generate Product Description{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="mb-0">AI Product Description Generator</h3>
+    <a href="{% url 'dashboard:dashboard_home' %}" class="btn btn-outline-secondary btn-sm">&larr; Back to Dashboard</a>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Product Details</h5>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Product Name <span class="text-danger">*</span></label>
+                        <input type="text" name="product_name" class="form-control"
+                               value="{{ product_name|default:'' }}" placeholder="e.g. ASUS TUF A16" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Brand</label>
+                        <input type="text" name="brand" class="form-control"
+                               value="{{ brand|default:'' }}" placeholder="e.g. ASUS">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Specifications</label>
+                        <div id="specsContainer">
+                            {% if specs %}
+                                {% for spec in specs %}
+                                    <div class="input-group mb-2 spec-row">
+                                        <input type="text" name="specs[]" class="form-control"
+                                               value="{{ spec }}" placeholder="e.g. Ryzen 7">
+                                        <button class="btn btn-outline-danger remove-spec" type="button">&times;</button>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="input-group mb-2 spec-row">
+                                    <input type="text" name="specs[]" class="form-control"
+                                           placeholder="e.g. Ryzen 7">
+                                    <button class="btn btn-outline-danger remove-spec" type="button">&times;</button>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <button type="button" class="btn btn-outline-primary btn-sm mt-1" id="addSpec">
+                            <i class="bi bi-plus"></i> Add Specification
+                        </button>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-magic"></i> Generate Description
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        {% if generated_description %}
+            <div class="card shadow-sm mb-3 border-primary">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-robot"></i> Generated Description</span>
+                    <button class="btn btn-sm btn-light" onclick="copyContent()">Copy</button>
+                </div>
+                <div class="card-body" id="generatedContent">
+                    <h6 class="text-muted text-uppercase small">Marketing Description</h6>
+                    <p>{{ generated_description }}</p>
+
+                    {% if generated_features %}
+                        <h6 class="text-muted text-uppercase small mt-4">Key Features</h6>
+                        <ul>
+                            {% for feature in generated_features %}
+                                <li>{{ feature }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+
+                    {% if generated_benefits %}
+                        <h6 class="text-muted text-uppercase small mt-4">Benefits</h6>
+                        <ul>
+                            {% for benefit in generated_benefits %}
+                                <li>{{ benefit }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+        {% else %}
+            <div class="card shadow-sm">
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-magic fs-1 text-muted"></i>
+                    <p class="text-muted mt-3 mb-0">
+                        Fill in the product details and click <strong>Generate Description</strong> to create an AI-powered product description.
+                    </p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('addSpec')?.addEventListener('click', function () {
+    const container = document.getElementById('specsContainer');
+    const row = document.createElement('div');
+    row.className = 'input-group mb-2 spec-row';
+    row.innerHTML = `
+        <input type="text" name="specs[]" class="form-control" placeholder="e.g. RTX 4060">
+        <button class="btn btn-outline-danger remove-spec" type="button">&times;</button>
+    `;
+    container.appendChild(row);
+    row.querySelector('.remove-spec').addEventListener('click', function () {
+        row.remove();
+    });
+});
+
+document.querySelectorAll('.remove-spec').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+        const rows = document.querySelectorAll('.spec-row');
+        if (rows.length > 1) {
+            this.closest('.spec-row').remove();
+        }
+    });
+});
+
+function copyContent() {
+    const el = document.getElementById('generatedContent');
+    const text = el.innerText;
+    navigator.clipboard.writeText(text).then(function () {
+        const btn = document.querySelector('#generatedContent ~ .card-header .btn');
+        btn.textContent = 'Copied!';
+        setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
+    });
+}
+
+(function () {
+    const form = document.querySelector('form');
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const resultsCol = document.querySelector('.col-lg-7');
+    const origContent = resultsCol.innerHTML;
+
+    form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Generating...';
+
+        resultsCol.innerHTML = `
+            <div class="card shadow-sm">
+                <div class="card-body text-center py-5">
+                    <div class="spinner-border text-primary mb-3" role="status"></div>
+                    <p class="text-muted">Generating description with AI...</p>
+                </div>
+            </div>
+        `;
+
+        const formData = new FormData(form);
+        const specs = [];
+        formData.getAll('specs[]').forEach(s => { if (s.trim()) specs.push(s.trim()); });
+
+        const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        try {
+            const res = await fetch('/api/descriptions/generate/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrf,
+                },
+                body: JSON.stringify({
+                    product_name: formData.get('product_name'),
+                    brand: formData.get('brand'),
+                    specs: specs,
+                }),
+            });
+            const data = await res.json();
+
+            if (!data.async) {
+                renderResult(data);
+                return;
+            }
+
+            pollTask(data.task_id);
+        } catch (err) {
+            resultsCol.innerHTML = `
+                <div class="card shadow-sm">
+                    <div class="card-body text-center py-5">
+                        <p class="text-danger">Error: ${err.message}</p>
+                    </div>
+                </div>
+            `;
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="bi bi-magic"></i> Generate Description';
+        }
+    });
+
+    async function pollTask(taskId) {
+        while (true) {
+            try {
+                const res = await fetch('/api/tasks/' + taskId + '/');
+                const data = await res.json();
+                if (data.status === 'SUCCESS') {
+                    renderResult(data.result);
+                    return;
+                } else if (data.status === 'FAILURE') {
+                    resultsCol.innerHTML = `
+                        <div class="card shadow-sm">
+                            <div class="card-body text-center py-5">
+                                <p class="text-danger">Error: ${data.error || 'Task failed'}</p>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+                await new Promise(r => setTimeout(r, 500));
+            } catch (e) {
+                resultsCol.innerHTML = `
+                    <div class="card shadow-sm">
+                        <div class="card-body text-center py-5">
+                            <p class="text-danger">Error: ${e.message}</p>
+                        </div>
+                    </div>
+                `;
+                return;
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="bi bi-magic"></i> Generate Description';
+            }
+        }
+    }
+
+    function renderResult(data) {
+        resultsCol.innerHTML = `
+            <div class="card shadow-sm mb-3 border-primary">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-robot"></i> Generated Description</span>
+                    <button class="btn btn-sm btn-light" onclick="copyContent()">Copy</button>
+                </div>
+                <div class="card-body" id="generatedContent">
+                    <h6 class="text-muted text-uppercase small">Marketing Description</h6>
+                    <p>${escapeHtml(data.marketing_description || '')}</p>
+                    ${(data.features || []).length ? `
+                        <h6 class="text-muted text-uppercase small mt-4">Key Features</h6>
+                        <ul>${data.features.map(f => `<li>${escapeHtml(f)}</li>`).join('')}</ul>
+                    ` : ''}
+                    ${(data.benefits || []).length ? `
+                        <h6 class="text-muted text-uppercase small mt-4">Benefits</h6>
+                        <ul>${data.benefits.map(b => `<li>${escapeHtml(b)}</li>`).join('')}</ul>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="bi bi-magic"></i> Generate Description';
+    }
+
+    function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+})();
+</script>
+{% endblock %}

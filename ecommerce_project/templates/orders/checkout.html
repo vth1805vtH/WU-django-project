@@ -1,0 +1,320 @@
+{% extends 'base.html' %}
+{% load static product_tags %}
+
+{% block title %}Checkout{% endblock %}
+
+{% block content %}
+<form method="post" novalidate id="checkoutForm">
+    {% csrf_token %}
+
+    <div class="row g-4">
+        <div class="col-lg-7">
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">{{ form.non_field_errors|striptags }}</div>
+            {% endif %}
+
+            {% if saved_addresses %}
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3"><i class="bi bi-geo-alt"></i> Saved Addresses</h5>
+                        <div class="row g-3" id="savedAddresses">
+                            {% for address in saved_addresses %}
+                                <div class="col-md-6">
+                                    <input type="radio" class="btn-check" name="address_id" id="addr_{{ address.id }}"
+                                           value="{{ address.id }}" autocomplete="off"
+                                           {% if form.address_id.value|stringformat:"s" == address.id|stringformat:"s" or forloop.first and not form.address_id.value %}checked{% endif %}>
+                                    <label class="btn btn-outline-primary w-100 text-start p-3 address-card" for="addr_{{ address.id }}">
+                                        <strong>{{ address.full_name }}</strong>
+                                        {% if address.is_default %}<span class="badge bg-primary ms-1">Default</span>{% endif %}
+                                        <br><small>{{ address.address_line_1 }}</small>
+                                        <br><small>{{ address.city }}, {{ address.province_or_state }} {{ address.postal_code }}</small>
+                                        <br><small>{{ address.country }}</small>
+                                        <br><small class="text-muted"><i class="bi bi-telephone"></i> {{ address.phone_number }}</small>
+                                    </label>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        {% if form.address_id.errors %}
+                            <div class="text-danger small mt-2">{{ form.address_id.errors|striptags }}</div>
+                        {% endif %}
+                        <div class="mt-3">
+                            <a href="#" class="btn btn-outline-secondary btn-sm" onclick="event.preventDefault(); showNewAddressForm();">
+                                <i class="bi bi-plus-lg"></i> Add New Address
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <div class="card shadow-sm mb-4" id="newAddressSection" style="{% if saved_addresses %}display:none;{% endif %}">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">
+                        {% if saved_addresses %}
+                            <i class="bi bi-plus-circle"></i> New Address
+                        {% else %}
+                            <i class="bi bi-geo-alt"></i> Shipping Address
+                        {% endif %}
+                    </h5>
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" name="full_name" class="form-control" value="{{ form.full_name.value|default:'' }}" placeholder="John Doe">
+                            {% if form.full_name.errors %}<div class="text-danger small">{{ form.full_name.errors|striptags }}</div>{% endif %}
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label">Phone Number</label>
+                            <input type="text" name="phone_number" class="form-control" value="{{ form.phone_number.value|default:'' }}" placeholder="012 345 678">
+                            {% if form.phone_number.errors %}<div class="text-danger small">{{ form.phone_number.errors|striptags }}</div>{% endif %}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Address</label>
+                            <input type="text" name="address_line_1" class="form-control" value="{{ form.address_line_1.value|default:'' }}" placeholder="Street address">
+                            {% if form.address_line_1.errors %}<div class="text-danger small">{{ form.address_line_1.errors|striptags }}</div>{% endif %}
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label">City</label>
+                            <input type="text" name="city" class="form-control" value="{{ form.city.value|default:'' }}">
+                            {% if form.city.errors %}<div class="text-danger small">{{ form.city.errors|striptags }}</div>{% endif %}
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label">Province / State</label>
+                            <input type="text" name="province_or_state" class="form-control" value="{{ form.province_or_state.value|default:'' }}">
+                            {% if form.province_or_state.errors %}<div class="text-danger small">{{ form.province_or_state.errors|striptags }}</div>{% endif %}
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label">Postal Code</label>
+                            <input type="text" name="postal_code" class="form-control" value="{{ form.postal_code.value|default:'' }}">
+                            {% if form.postal_code.errors %}<div class="text-danger small">{{ form.postal_code.errors|striptags }}</div>{% endif %}
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label">Country</label>
+                            <input type="text" name="country" class="form-control" value="{{ form.country.value|default:'' }}">
+                            {% if form.country.errors %}<div class="text-danger small">{{ form.country.errors|striptags }}</div>{% endif %}
+                        </div>
+                        {% if saved_addresses %}
+                            <div class="col-12">
+                                <div class="form-check">
+                                    <input type="checkbox" name="save_address" class="form-check-input" id="save_address" checked>
+                                    <label class="form-check-label" for="save_address">Save this address for future orders</label>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                    {% if saved_addresses %}
+                        <div class="mt-3">
+                            <a href="#" class="btn btn-outline-secondary btn-sm" onclick="event.preventDefault(); showSavedAddresses();">
+                                <i class="bi bi-arrow-left"></i> Use Saved Address
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-3"><i class="bi bi-credit-card"></i> Payment Method</h5>
+                    <div class="row g-3">
+                        {% for pm in payment_methods %}
+                            <div class="col-md-6">
+                                <input type="radio" class="btn-check payment-radio" name="payment_method_id" id="pm_{{ pm.id }}"
+                                       value="{{ pm.id }}" autocomplete="off"
+                                       data-slug="{{ pm.slug }}"
+                                       {% if form.payment_method_id.value|stringformat:"s" == pm.id|stringformat:"s" or forloop.first and not form.payment_method_id.value %}checked{% endif %}>
+                                <label class="btn btn-outline-primary w-100 text-start p-3" for="pm_{{ pm.id }}">
+                                    <strong>{{ pm.name }}</strong>
+                                    {% if pm.description %}<br><small class="text-muted">{{ pm.description }}</small>{% endif %}
+                                </label>
+                            </div>
+                        {% empty %}
+                            <div class="col-12">
+                                <div class="alert alert-warning mb-0">No payment methods available.</div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    {% if form.payment_method_id.errors %}
+                        <div class="text-danger small mt-2">{{ form.payment_method_id.errors|striptags }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Hidden card & acleda fields (stay inside form) -->
+            <input type="hidden" name="cardholder_name" id="hidden_cardholder" value="{{ form.cardholder_name.value|default:'' }}">
+            <input type="hidden" name="card_number" id="hidden_card_number" value="{{ form.card_number.value|default:'' }}">
+            <input type="hidden" name="expiry_date" id="hidden_expiry" value="{{ form.expiry_date.value|default:'' }}">
+            <input type="hidden" name="cvv" id="hidden_cvv" value="{{ form.cvv.value|default:'' }}">
+            <input type="hidden" name="acleda_confirmed" id="hidden_acleda" value="">
+            {% if form.cardholder_name.errors %}<div class="text-danger small">{{ form.cardholder_name.errors|striptags }}</div>{% endif %}
+            {% if form.card_number.errors %}<div class="text-danger small">{{ form.card_number.errors|striptags }}</div>{% endif %}
+            {% if form.expiry_date.errors %}<div class="text-danger small">{{ form.expiry_date.errors|striptags }}</div>{% endif %}
+            {% if form.cvv.errors %}<div class="text-danger small">{{ form.cvv.errors|striptags }}</div>{% endif %}
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Order Summary ({{ total_items }} item{{ total_items|pluralize }})</h5>
+                    {% for item in cart_items %}
+                        <div class="d-flex align-items-center gap-3 mb-3 pb-3 border-bottom">
+                            <img src="{{ item.product|image_url }}" alt="{{ item.product.name }}" style="width:56px;height:56px;object-fit:cover;border-radius:0.375rem;">
+                            <div class="flex-grow-1">
+                                <small class="fw-semibold">{{ item.product.name }}</small>
+                                <br><small class="text-muted">Qty: {{ item.quantity }}</small>
+                            </div>
+                            <span class="fw-semibold">${{ item.total_price }}</span>
+                        </div>
+                    {% endfor %}
+                    <div class="d-flex justify-content-between fw-bold fs-5 mt-3">
+                        <span>Total</span>
+                        <span>${{ total_price }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-check mb-3">
+                <input type="checkbox" name="confirm" class="form-check-input" id="id_confirm" required>
+                <label class="form-check-label" for="id_confirm">
+                    I confirm my order and agree to the terms &amp; conditions.
+                </label>
+                {% if form.confirm.errors %}
+                    <div class="text-danger small">{{ form.confirm.errors|striptags }}</div>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg w-100">
+                <i class="bi bi-check2-circle"></i> Place Order
+            </button>
+        </div>
+    </div>
+</form>
+
+<!-- Visa Card Modal -->
+<div class="modal fade" id="visaModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-credit-card-2-front"></i> Card Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label">Cardholder Name</label>
+                        <input type="text" class="form-control modal-card-input" id="modal_cardholder" value="{{ form.cardholder_name.value|default:'' }}" placeholder="John Doe">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Card Number</label>
+                        <input type="text" class="form-control modal-card-input" id="modal_card_number" value="{{ form.card_number.value|default:'' }}" placeholder="1234 5678 9012 3456" maxlength="19">
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="form-label">Expiry Date</label>
+                        <input type="text" class="form-control modal-card-input" id="modal_expiry" value="{{ form.expiry_date.value|default:'' }}" placeholder="MM/YY" maxlength="5">
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="form-label">CVV</label>
+                        <input type="text" class="form-control modal-card-input" id="modal_cvv" value="{{ form.cvv.value|default:'' }}" placeholder="123" maxlength="4">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="confirmCardBtn">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ACLEDA Bank QR Modal -->
+<div class="modal fade" id="acledaModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content text-center">
+            <div class="modal-header">
+                <h5 class="modal-title">ACLEDA Bank Payment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body py-4">
+                {% for pm in payment_methods %}
+                    {% if pm.slug == 'acleda-bank' and pm.qr_code %}
+                        <img src="{{ pm.qr_code.url }}" alt="ACLEDA Bank QR" class="img-fluid" style="max-width:250px;">
+                    {% endif %}
+                {% endfor %}
+                <p class="text-muted small mt-3 mb-0">Scan the QR code with your ACLEDA mobile app to pay.</p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="acledaDoneBtn">Done</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showNewAddressForm() {
+    document.querySelectorAll('input[name="address_id"]').forEach(function(el) { el.checked = false; });
+    document.getElementById('newAddressSection').style.display = 'block';
+}
+
+function showSavedAddresses() {
+    document.getElementById('newAddressSection').style.display = 'none';
+}
+
+(function() {
+    document.querySelectorAll('input[name="address_id"]').forEach(function(radio) {
+        radio.addEventListener('change', function() {
+            if (this.checked) {
+                document.getElementById('newAddressSection').style.display = 'none';
+            }
+        });
+    });
+
+    var visaModalEl = document.getElementById('visaModal');
+    var acledaModalEl = document.getElementById('acledaModal');
+    var visaModal = new bootstrap.Modal(visaModalEl);
+    var acledaModal = new bootstrap.Modal(acledaModalEl);
+
+    function syncCardToForm() {
+        document.getElementById('hidden_cardholder').value = document.getElementById('modal_cardholder').value;
+        document.getElementById('hidden_card_number').value = document.getElementById('modal_card_number').value;
+        document.getElementById('hidden_expiry').value = document.getElementById('modal_expiry').value;
+        document.getElementById('hidden_cvv').value = document.getElementById('modal_cvv').value;
+    }
+
+    function syncCardToModal() {
+        document.getElementById('modal_cardholder').value = document.getElementById('hidden_cardholder').value;
+        document.getElementById('modal_card_number').value = document.getElementById('hidden_card_number').value;
+        document.getElementById('modal_expiry').value = document.getElementById('hidden_expiry').value;
+        document.getElementById('hidden_cvv').value = document.getElementById('hidden_cvv').value;
+    }
+
+    document.getElementById('confirmCardBtn').addEventListener('click', syncCardToForm);
+
+    document.getElementById('acledaDoneBtn').addEventListener('click', function() {
+        document.getElementById('hidden_acleda').value = 'true';
+    });
+
+    document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+        var checked = document.querySelector('.payment-radio:checked');
+        if (!checked) return;
+        if (checked.dataset.slug === 'visa-card') {
+            syncCardToForm();
+        } else if (checked.dataset.slug === 'acleda-bank') {
+            if (document.getElementById('hidden_acleda').value !== 'true') {
+                e.preventDefault();
+                alert('Please scan the ACLEDA Bank QR code and complete the payment before submitting.');
+            }
+        }
+    });
+
+    document.querySelectorAll('.payment-radio').forEach(function(radio) {
+        radio.addEventListener('change', function() {
+            if (this.dataset.slug === 'visa-card') {
+                syncCardToModal();
+                visaModal.show();
+            } else if (this.dataset.slug === 'acleda-bank') {
+                acledaModal.show();
+            }
+        });
+    });
+})();
+</script>
+{% endblock %}

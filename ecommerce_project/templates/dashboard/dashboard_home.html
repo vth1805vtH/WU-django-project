@@ -1,0 +1,382 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="mb-0">Analytics Dashboard</h3>
+    <span class="text-muted small">Welcome back, {{ user.get_full_name|default:user.username }}</span>
+</div>
+
+<div id="aiInsightsContainer">
+    <div class="card shadow-sm mb-4 border-info">
+        <div class="card-header bg-info text-white d-flex align-items-center gap-2">
+            <i class="bi bi-robot"></i>
+            <strong>AI Insights</strong>
+            <div class="ms-auto">
+                <div class="spinner-border spinner-border-sm text-white" id="insightsSpinner" role="status"></div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row g-3" id="insightsBody">
+                <div class="col-12">
+                    <p class="text-muted mb-0"><em>Loading AI-powered insights...</em></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-6 col-xl-2">
+        <div class="card border-0 shadow-sm bg-warning text-white h-100">
+            <div class="card-body d-flex align-items-center gap-3">
+                <i class="bi bi-hourglass-split fs-1"></i>
+                <div>
+                    <h2 class="mb-0">{{ pending_orders }}</h2>
+                    <small>Pending</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-2">
+        <div class="card border-0 shadow-sm bg-primary text-white h-100">
+            <div class="card-body d-flex align-items-center gap-3">
+                <i class="bi bi-check-circle fs-1"></i>
+                <div>
+                    <h2 class="mb-0">{{ approved_orders }}</h2>
+                    <small>Approved</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-2">
+        <div class="card border-0 shadow-sm bg-danger text-white h-100">
+            <div class="card-body d-flex align-items-center gap-3">
+                <i class="bi bi-x-circle fs-1"></i>
+                <div>
+                    <h2 class="mb-0">{{ rejected_orders }}</h2>
+                    <small>Rejected</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-2">
+        <div class="card border-0 shadow-sm bg-info text-white h-100">
+            <div class="card-body d-flex align-items-center gap-3">
+                <i class="bi bi-gear fs-1"></i>
+                <div>
+                    <h2 class="mb-0">{{ processing_orders }}</h2>
+                    <small>Processing</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-2">
+        <div class="card border-0 shadow-sm bg-success text-white h-100">
+            <div class="card-body d-flex align-items-center gap-3">
+                <i class="bi bi-currency-dollar fs-1"></i>
+                <div>
+                    <h2 class="mb-0">${{ revenue|floatformat:0 }}</h2>
+                    <small>Revenue</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-2">
+        <div class="card border-0 shadow-sm bg-dark text-white h-100">
+            <div class="card-body d-flex align-items-center gap-3">
+                <i class="bi bi-cart-check fs-1"></i>
+                <div>
+                    <h2 class="mb-0">{{ total_orders }}</h2>
+                    <small>Total Orders</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-xl-3 col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white">
+                <h6 class="mb-0"><i class="bi bi-trophy text-warning"></i> Best-Selling Products</h6>
+            </div>
+            <div class="card-body">
+                {% if best_sellers %}
+                    <ol class="list-group list-group-flush">
+                        {% for item in best_sellers %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                <small class="fw-medium">{{ item.product__name }}</small>
+                                <span class="badge bg-primary rounded-pill">{{ item.total_quantity }} sold</span>
+                            </li>
+                        {% endfor %}
+                    </ol>
+                {% else %}
+                    <p class="text-muted small mb-0">No sales data yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white">
+                <h6 class="mb-0"><i class="bi bi-award text-primary"></i> Top Brands</h6>
+            </div>
+            <div class="card-body">
+                {% if top_brands %}
+                    <ol class="list-group list-group-flush">
+                        {% for item in top_brands %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                <small class="fw-medium">{{ item.product__brand__name }}</small>
+                                <span class="badge bg-success rounded-pill">${{ item.total_revenue|floatformat:0 }}</span>
+                            </li>
+                        {% endfor %}
+                    </ol>
+                {% else %}
+                    <p class="text-muted small mb-0">No brand data yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white">
+                <h6 class="mb-0"><i class="bi bi-graph-up text-success"></i> Revenue Trend</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="miniRevenueChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white">
+                <h6 class="mb-0"><i class="bi bi-bar-chart text-info"></i> Order Growth</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="miniOrdersChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Revenue (Last 6 Months)</h5>
+                <canvas id="revenueChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title d-flex justify-content-between">
+                    <span><i class="bi bi-bell"></i> Notifications</span>
+                    <a href="{% url 'dashboard:order_review_list' %}" class="btn btn-outline-primary btn-sm">View All</a>
+                </h5>
+                {% if unread_notifications %}
+                    <div class="list-group list-group-flush">
+                        {% for notification in unread_notifications %}
+                            <div class="list-group-item px-0 border-0 border-bottom">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <small class="fw-semibold">{{ notification.title }}</small>
+                                        <br><small class="text-muted">{{ notification.message|truncatewords:10 }}</small>
+                                    </div>
+                                    <span class="badge bg-danger rounded-pill ms-2">New</span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted small mb-0">No new notifications.</p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title d-flex justify-content-between">
+                    Low Stock Products
+                    <span class="badge bg-danger">{{ low_stock_products|length }}</span>
+                </h5>
+                {% if low_stock_products %}
+                    <ul class="list-group list-group-flush">
+                        {% for product in low_stock_products %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                <small>{{ product.name }}</small>
+                                <span class="badge bg-{% if product.stock == 0 %}danger{% else %}warning{% endif %} rounded-pill">{{ product.stock }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted small mb-0">All products are well-stocked.</p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card shadow-sm border-primary">
+            <div class="card-body text-center">
+                <i class="bi bi-magic fs-2 text-primary"></i>
+                <h6 class="mt-2">AI Product Descriptions</h6>
+                <p class="text-muted small">Generate professional product descriptions with AI.</p>
+                <a href="{% url 'dashboard:generate_description' %}" class="btn btn-primary btn-sm w-100">
+                    <i class="bi bi-magic"></i> Generate Description
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h5 class="card-title d-flex justify-content-between">
+            <span>Recent Orders</span>
+            <a href="{% url 'dashboard:order_review_list' %}" class="btn btn-primary btn-sm">Review Pending Orders</a>
+        </h5>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Order #</th>
+                        <th>Customer</th>
+                        <th>Items</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in recent_orders %}
+                        <tr>
+                            <td><a href="{% url 'dashboard:order_detail' order.id %}">#{{ order.order_number }}</a></td>
+                            <td>{{ order.first_name }} {{ order.last_name }}</td>
+                            <td>{{ order.item_count }}</td>
+                            <td>${{ order.total_amount }}</td>
+                            <td><span class="badge {% if order.status == 'pending' %}bg-warning text-dark{% elif order.status == 'approved' %}bg-primary{% elif order.status == 'rejected' %}bg-danger{% elif order.status == 'processing' %}bg-info{% elif order.status == 'shipped' %}bg-primary{% elif order.status == 'delivered' %}bg-success{% elif order.status == 'cancelled' %}bg-secondary{% endif %}">{{ order.get_status_display }}</span></td>
+                            <td><small class="text-muted">{{ order.created_at|date:'M j, Y' }}</small></td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="6" class="text-muted text-center">No orders yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+Chart.defaults.font.family = 'Segoe UI, system-ui, sans-serif';
+
+(async function loadInsights() {
+    const spinner = document.getElementById('insightsSpinner');
+    const body = document.getElementById('insightsBody');
+    try {
+        const res = await fetch('/api/analytics/insights/');
+        const data = await res.json();
+
+        if (!data.async) {
+            spinner.remove();
+            renderInsights(data.insights);
+            return;
+        }
+
+        const taskId = data.task_id;
+        while (true) {
+            const statusRes = await fetch('/api/tasks/' + taskId + '/');
+            const statusData = await statusRes.json();
+            if (statusData.status === 'SUCCESS') {
+                spinner.remove();
+                renderInsights(statusData.result.insights);
+                return;
+            } else if (statusData.status === 'FAILURE') {
+                spinner.remove();
+                body.innerHTML = '<div class="col-12"><p class="text-muted mb-0">Unable to load AI insights at this time.</p></div>';
+                return;
+            }
+            await new Promise(r => setTimeout(r, 1000));
+        }
+    } catch (e) {
+        spinner.remove();
+        body.innerHTML = '<div class="col-12"><p class="text-muted mb-0">Unable to load AI insights at this time.</p></div>';
+    }
+})();
+
+function renderInsights(insights) {
+    const body = document.getElementById('insightsBody');
+    if (!insights || !insights.length) {
+        body.innerHTML = '<div class="col-12"><p class="text-muted mb-0">No insights available yet.</p></div>';
+        return;
+    }
+    body.innerHTML = insights.map(function (insight) {
+        return '<div class="col-md-6"><div class="d-flex align-items-start gap-2 p-2 rounded bg-light"><i class="bi bi-lightbulb-fill text-warning mt-1"></i><small>' + insight + '</small></div></div>';
+    }).join('');
+}
+
+new Chart(document.getElementById('revenueChart'), {
+    type: 'bar',
+    data: {
+        labels: {{ chart_labels|safe }},
+        datasets: [{
+            label: 'Revenue ($)',
+            data: {{ chart_data|safe }},
+            backgroundColor: 'rgba(13, 110, 253, 0.15)',
+            borderColor: 'rgba(13, 110, 253, 1)',
+            borderWidth: 2,
+            borderRadius: 6,
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+            y: { beginAtZero: true, ticks: { callback: function(v) { return '$' + v; } } }
+        }
+    }
+});
+
+new Chart(document.getElementById('miniRevenueChart'), {
+    type: 'line',
+    data: {
+        labels: {{ sales_chart_labels|safe }},
+        datasets: [{
+            data: {{ sales_chart_data|safe }},
+            borderColor: 'rgba(25, 135, 84, 1)',
+            backgroundColor: 'rgba(25, 135, 84, 0.1)',
+            fill: true,
+            tension: 0.3,
+            pointRadius: 2,
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { x: { display: false }, y: { display: false, beginAtZero: true } }
+    }
+});
+
+new Chart(document.getElementById('miniOrdersChart'), {
+    type: 'bar',
+    data: {
+        labels: {{ orders_chart_labels|safe }},
+        datasets: [{
+            data: {{ orders_chart_data|safe }},
+            backgroundColor: 'rgba(13, 202, 240, 0.3)',
+            borderColor: 'rgba(13, 202, 240, 1)',
+            borderWidth: 1,
+            borderRadius: 4,
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { x: { display: false }, y: { display: false, beginAtZero: true } }
+    }
+});
+</script>
+{% endblock %}

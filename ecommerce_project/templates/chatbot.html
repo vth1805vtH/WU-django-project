@@ -1,0 +1,170 @@
+{% load static %}
+
+<button class="chatbot-btn" id="chatbotBtn" aria-label="Open chat">
+  <i class="bi bi-chat-dots"></i>
+  <span class="badge bg-danger rounded-pill d-none" id="chatbotBadge">1</span>
+</button>
+
+<div class="chatbot-window d-none" id="chatbotWindow">
+  <div class="chatbot-header">
+    <i class="bi bi-robot"></i>
+    <div class="chatbot-header-info">
+      <span class="chatbot-header-title">ShopEase Assistant</span>
+      <span class="chatbot-header-status">Online</span>
+    </div>
+    <button type="button" class="btn-close btn-close-white" id="chatbotClose" aria-label="Close"></button>
+  </div>
+
+  <div class="chatbot-messages" id="chatbotMessages">
+    <div class="chatbot-msg assistant">
+      <div class="msg-content">
+        Hi! I'm your AI shopping assistant. Ask me about products, compare items, track orders, or get recommendations!
+      </div>
+    </div>
+    <div class="chatbot-suggestions" id="chatbotSuggestions">
+      <button class="suggestion-chip" data-msg="Recommend a laptop for programming">Laptop for coding</button>
+      <button class="suggestion-chip" data-msg="Show products under $1000">Under $1000</button>
+      <button class="suggestion-chip" data-msg="Current deals and discounts">Best deals</button>
+      <button class="suggestion-chip" data-msg="Where is my order?">Track order</button>
+    </div>
+  </div>
+
+  <div class="chatbot-input-area">
+    <input type="text" id="chatbotInput" placeholder="Ask about products..." autocomplete="off">
+    <button class="btn btn-primary btn-sm" id="chatbotSend">
+      <i class="bi bi-send-fill"></i>
+    </button>
+  </div>
+</div>
+
+<script>
+(function () {
+  const btn = document.getElementById('chatbotBtn');
+  const win = document.getElementById('chatbotWindow');
+  const close = document.getElementById('chatbotClose');
+  const input = document.getElementById('chatbotInput');
+  const send = document.getElementById('chatbotSend');
+  const msgs = document.getElementById('chatbotMessages');
+  const suggestions = document.getElementById('chatbotSuggestions');
+  const badge = document.getElementById('chatbotBadge');
+
+  let sessionId = null;
+  let isOpen = false;
+
+  function toggle() {
+    isOpen = !isOpen;
+    win.classList.toggle('d-none', !isOpen);
+    if (isOpen) {
+      input.focus();
+      scrollToBottom();
+      badge.classList.add('d-none');
+    }
+  }
+
+  btn.addEventListener('click', toggle);
+  close.addEventListener('click', toggle);
+
+  function scrollToBottom() {
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function formatMessage(text) {
+    let html = text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\n/g, '<br>');
+    return html;
+  }
+
+  function addMessage(role, text) {
+    const div = document.createElement('div');
+    div.className = 'chatbot-msg ' + role;
+    const content = document.createElement('div');
+    content.className = 'msg-content';
+    content.innerHTML = formatMessage(text);
+    div.appendChild(content);
+    msgs.insertBefore(div, suggestions);
+    scrollToBottom();
+  }
+
+  function showTyping() {
+    const div = document.createElement('div');
+    div.className = 'chatbot-msg assistant typing';
+    div.id = 'typingIndicator';
+    const dots = document.createElement('div');
+    dots.className = 'typing-dots';
+    dots.innerHTML = '<span></span><span></span><span></span>';
+    div.appendChild(dots);
+    msgs.insertBefore(div, suggestions);
+    scrollToBottom();
+  }
+
+  function removeTyping() {
+    const el = document.getElementById('typingIndicator');
+    if (el) el.remove();
+  }
+
+  function updateSuggestions(reply) {
+    const chips = suggestions.querySelectorAll('.suggestion-chip');
+    chips.forEach(chip => {
+      const txt = chip.getAttribute('data-msg');
+      if (reply.toLowerCase().includes('order') || reply.toLowerCase().includes('track')) {
+        if (txt.includes('order')) chip.style.display = '';
+        else chip.style.display = 'none';
+      } else if (reply.toLowerCase().includes('deal') || reply.toLowerCase().includes('discount')) {
+        if (txt.includes('deal')) chip.style.display = '';
+        else chip.style.display = 'none';
+      } else {
+        chip.style.display = '';
+      }
+    });
+  }
+
+  async function sendMessage() {
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    suggestions.querySelectorAll('.suggestion-chip').forEach(c => c.style.display = 'none');
+    addMessage('user', text);
+    showTyping();
+
+    const csrf = document.querySelector('[name=csrfmiddlewaretoken]');
+    const headers = { 'Content-Type': 'application/json' };
+    if (csrf) headers['X-CSRFToken'] = csrf.value;
+
+    try {
+      const res = await fetch('/api/chat/', {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify({ message: text, session_id: sessionId }),
+      });
+      const data = await res.json();
+      removeTyping();
+      if (data.reply) {
+        addMessage('assistant', data.reply);
+        sessionId = data.session_id;
+      } else if (data.error) {
+        addMessage('assistant', 'Error: ' + data.error);
+      }
+    } catch (err) {
+      removeTyping();
+      addMessage('assistant', 'Sorry, something went wrong. Please try again.');
+    }
+  }
+
+  send.addEventListener('click', sendMessage);
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') sendMessage();
+  });
+
+  suggestions.addEventListener('click', function (e) {
+    const chip = e.target.closest('.suggestion-chip');
+    if (!chip) return;
+    const msg = chip.getAttribute('data-msg');
+    input.value = msg;
+    sendMessage();
+  });
+})();
+</script>
